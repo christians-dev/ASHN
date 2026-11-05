@@ -1,0 +1,46 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ashen.Api/Ashen.Api.csproj" />
+    <Project Path="src/Ashen.AppHost/Ashen.AppHost.csproj" />
+    <Project Path="src/Ashen.BuildingBlocks/Ashen.BuildingBlocks.csproj" />
+    <Project Path="src/Ashen.ServiceDefaults/Ashen.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Catalog/">
+    <Project Path="src/Modules/Catalog/Ashen.Catalog.Contracts/Ashen.Catalog.Contracts.csproj" />
+    <Project Path="src/Modules/Catalog/Ashen.Catalog/Ashen.Catalog.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Customers/">
+    <Project Path="src/Modules/Customers/Ashen.Customers.Contracts/Ashen.Customers.Contracts.csproj" />
+    <Project Path="src/Modules/Customers/Ashen.Customers/Ashen.Customers.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/Ashen.Identity.Contracts/Ashen.Identity.Contracts.csproj" />
+    <Project Path="src/Modules/Identity/Ashen.Identity/Ashen.Identity.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Ordering/">
+    <Project Path="src/Modules/Ordering/Ashen.Ordering.Contracts/Ashen.Ordering.Contracts.csproj" />
+    <Project Path="src/Modules/Ordering/Ashen.Ordering/Ashen.Ordering.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Payments/">
+    <Project Path="src/Modules/Payments/Ashen.Payments.Contracts/Ashen.Payments.Contracts.csproj" />
+    <Project Path="src/Modules/Payments/Ashen.Payments/Ashen.Payments.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Pricing/">
+    <Project Path="src/Modules/Pricing/Ashen.Pricing.Contracts/Ashen.Pricing.Contracts.csproj" />
+    <Project Path="src/Modules/Pricing/Ashen.Pricing/Ashen.Pricing.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Promotions/">
+    <Project Path="src/Modules/Promotions/Ashen.Promotions.Contracts/Ashen.Promotions.Contracts.csproj" />
+    <Project Path="src/Modules/Promotions/Ashen.Promotions/Ashen.Promotions.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Reviews/">
+    <Project Path="src/Modules/Reviews/Ashen.Reviews.Contracts/Ashen.Reviews.Contracts.csproj" />
+    <Project Path="src/Modules/Reviews/Ashen.Reviews/Ashen.Reviews.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ashen.ArchitectureTests/Ashen.ArchitectureTests.csproj" />
+    <Project Path="tests/Ashen.IntegrationTests/Ashen.IntegrationTests.csproj" />
+    <Project Path="tests/Ashen.UnitTests/Ashen.UnitTests.csproj" />
+  </Folder>
+</Solution>

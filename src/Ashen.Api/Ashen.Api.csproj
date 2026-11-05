@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <UserSecretsId>ashen-api</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Ashen.ServiceDefaults/Ashen.ServiceDefaults.csproj" />
+    <ProjectReference Include="../Ashen.BuildingBlocks/Ashen.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Modules/Catalog/Ashen.Catalog/Ashen.Catalog.csproj" />
+    <ProjectReference Include="../Modules/Identity/Ashen.Identity/Ashen.Identity.csproj" />
+    <ProjectReference Include="../Modules/Customers/Ashen.Customers/Ashen.Customers.csproj" />
+    <ProjectReference Include="../Modules/Ordering/Ashen.Ordering/Ashen.Ordering.csproj" />
+    <ProjectReference Include="../Modules/Payments/Ashen.Payments/Ashen.Payments.csproj" />
+    <ProjectReference Include="../Modules/Pricing/Ashen.Pricing/Ashen.Pricing.csproj" />
+    <ProjectReference Include="../Modules/Promotions/Ashen.Promotions/Ashen.Promotions.csproj" />
+    <ProjectReference Include="../Modules/Reviews/Ashen.Reviews/Ashen.Reviews.csproj" />
+  </ItemGroup>
+
+</Project>

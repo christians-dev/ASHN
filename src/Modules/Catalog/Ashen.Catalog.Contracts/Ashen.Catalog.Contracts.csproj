@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../../../Ashen.BuildingBlocks/Ashen.BuildingBlocks.csproj" />
+  </ItemGroup>
+
+</Project>

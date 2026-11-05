@@ -1,0 +1,54 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 1rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.table input {
+  font: inherit;
+  width: 6rem;
+  padding: 0.25rem;
+}
+
+.section {
+  margin-block: 2rem;
+  padding-block-start: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: end;
+}
+
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.thumbs img {
+  width: 8rem;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  display: block;
+}
+
+.textarea {
+  font: inherit;
+  width: 100%;
+  min-height: 6rem;
+  padding: 0.5rem;
+}

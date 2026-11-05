@@ -1,0 +1,89 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card p {
+  margin: 0.25rem 0 0;
+}
+
+.cardLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardImage {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: #eee;
+  display: block;
+}
+
+.cardName {
+  font-size: 1rem;
+  margin: 0.5rem 0 0;
+}
+
+.muted {
+  color: var(--color-muted);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0 1rem;
+  align-items: end;
+  margin-block-end: 1rem;
+}
+
+.detail {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 48rem) {
+  .detail {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.gallery {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.optionGroup {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.optionValues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.optionValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+}
+
+.optionValue:has(input:disabled) {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.optionValue:has(input:checked) {
+  border-color: var(--color-text);
+  font-weight: 600;
+}
