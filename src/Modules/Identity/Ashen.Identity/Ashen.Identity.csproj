@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../Ashen.BuildingBlocks/Ashen.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Ashen.Identity.Contracts/Ashen.Identity.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Passwords/common-passwords.txt" LogicalName="Ashen.Identity.common-passwords.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ashen.UnitTests" />
+    <InternalsVisibleTo Include="Ashen.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

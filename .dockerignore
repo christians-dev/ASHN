@@ -1,0 +1,20 @@
+# Keep the build context small and free of secrets and local build output.
+.git
+.github
+.claude
+.specify
+.vs
+.vscode
+specs
+tests
+**/bin
+**/obj
+**/node_modules
+web/dist
+web/playwright-report
+web/test-results
+src/Ashen.Api/media
+**/*.user
+**/.env
+**/appsettings.Development.json
+**/secrets.json

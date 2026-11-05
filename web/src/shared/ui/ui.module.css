@@ -1,0 +1,87 @@
+/* Plain, accessible defaults. Visual design is decided later (spec assumptions). */
+
+.button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-text);
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--color-text);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+  margin-block-end: 1rem;
+  /* Grid items won't shrink below their content by default; inputs are ~200px wide, too wide for phones. */
+  min-width: 0;
+}
+
+.field input,
+.field select {
+  min-width: 0;
+  font: inherit;
+  padding: 0.5rem;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+}
+
+.field [aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.fieldError {
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  margin-block: 1rem;
+}
+
+.error {
+  color: var(--color-error);
+}
+
+.info {
+  color: var(--color-text);
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.spinner {
+  padding: 1rem;
+  color: var(--color-muted);
+}
+
+.pagination {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-block: 1rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--color-muted);
+}

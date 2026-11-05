@@ -1,0 +1,73 @@
+.stars {
+  color: #b7791f;
+  white-space: nowrap;
+}
+
+.count {
+  color: #555;
+}
+
+.section {
+  margin-block: 2rem;
+  padding-block-start: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.list li {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.starInput {
+  border: none;
+  padding: 0;
+  font-size: 1.5rem;
+  color: #b7791f;
+}
+
+.starInput legend {
+  font-size: 1rem;
+  color: inherit;
+}
+
+.starInput input {
+  position: absolute;
+  opacity: 0;
+}
+
+.starInput label {
+  cursor: pointer;
+}
+
+.starInput input:focus-visible + span {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.error {
+  color: #b00020;
+  font-size: 1rem;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.form textarea {
+  display: block;
+  width: 100%;
+  max-width: 36rem;
+  min-height: 6rem;
+  font: inherit;
+  margin-block: 0.25rem 0.75rem;
+}

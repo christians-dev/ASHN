@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../Ashen.BuildingBlocks/Ashen.BuildingBlocks.csproj" />
+    <ProjectReference Include="../Ashen.Payments.Contracts/Ashen.Payments.Contracts.csproj" />
+    <ProjectReference Include="../../Identity/Ashen.Identity.Contracts/Ashen.Identity.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ashen.UnitTests" />
+    <InternalsVisibleTo Include="Ashen.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

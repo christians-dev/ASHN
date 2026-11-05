@@ -1,0 +1,41 @@
+.lines {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 5rem 1fr auto;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.line p {
+  margin: 0.25rem 0;
+}
+
+.image {
+  width: 5rem;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.muted {
+  color: var(--color-muted);
+}
+
+.notice {
+  color: var(--color-error);
+}
+
+.subtotal {
+  text-align: right;
+  font-size: 1.125rem;
+}
+
+.coupon {
+  margin-block: 1rem;
+  max-width: 24rem;
+}
