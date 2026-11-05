@@ -56,6 +56,7 @@ internal sealed class Order : AggregateRoot
             CustomerId = customerId,
             ContactEmail = contactEmail,
             Status = OrderStatus.Paid,
+            CompletionPending = true,
             PlacedAt = placedAt,
             Subtotal = subtotal,
             CouponCode = couponCode,
@@ -110,6 +111,14 @@ internal sealed class Order : AggregateRoot
     }
 
     public Result Deliver() => Move(OrderStatus.Shipped, OrderStatus.Delivered);
+    /// <summary>
+    /// Saved, but stock, coupon and payment aren't confirmed and captured yet. Saved with the order so a failure
+    /// in those steps can't lose them; <see cref="Background.PendingOrderSettler"/> finishes them.
+    /// </summary>
+    public bool CompletionPending { get; private set; }
+
+    public void MarkCompleted() => CompletionPending = false;
+
     /// <summary>When it was cancelled; null otherwise.</summary>
     public DateTimeOffset? CancelledAt { get; private set; }
 
@@ -121,6 +130,11 @@ internal sealed class Order : AggregateRoot
 
     public Result Cancel(DateTimeOffset now)
     {
+        if (CompletionPending)
+        {
+            return Error.Conflict("order.processing", "This order is still being processed. Please try again in a few minutes.");
+        }
+
         var moved = Move(OrderStatus.Paid, OrderStatus.Cancelled);
         if (moved.IsSuccess)
         {
@@ -146,7 +160,8 @@ internal sealed class Order : AggregateRoot
     }
 
     /// <summary>Customers may cancel themselves within an hour, while the order is still Paid (FR-035).</summary>
-    public bool CanCustomerCancel(DateTimeOffset now) => Status == OrderStatus.Paid && now - PlacedAt <= CustomerCancelWindow;
+    public bool CanCustomerCancel(DateTimeOffset now) =>
+        Status == OrderStatus.Paid && !CompletionPending && now - PlacedAt <= CustomerCancelWindow;
 
     private Result Move(OrderStatus from, OrderStatus to)
     {

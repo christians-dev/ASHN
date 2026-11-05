@@ -9,7 +9,14 @@ public class OrderTests
     private static readonly DateTimeOffset PlacedAt = new(2026, 11, 4, 12, 0, 0, TimeSpan.Zero);
     private static Money Usd(decimal amount) => new(amount, "USD");
 
-    private static Order NewOrder() => Order.Place(
+    private static Order NewOrder()
+    {
+        var order = Placed();
+        order.MarkCompleted(); // stock, coupon and payment confirmed
+        return order;
+    }
+
+    private static Order Placed() => Order.Place(
         orderNumber: "ASH-000001",
         checkoutId: Guid.CreateVersion7(),
         customerId: Guid.CreateVersion7(),
@@ -62,6 +69,16 @@ public class OrderTests
         Assert.True(order.Deliver().IsSuccess);
         Assert.Equal(OrderStatus.Delivered, order.Status);
         Assert.False(order.Ship().IsSuccess);
+    }
+
+    [Fact]
+    public void Order_still_completing_cannot_be_cancelled()
+    {
+        var order = Placed();
+
+        Assert.True(order.CompletionPending);
+        Assert.False(order.CanCustomerCancel(order.PlacedAt));
+        Assert.False(order.Cancel(DateTimeOffset.UtcNow).IsSuccess);
     }
 
     [Fact]

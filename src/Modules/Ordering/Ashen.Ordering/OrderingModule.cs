@@ -28,8 +28,9 @@ public sealed class OrderingModule : IModule
         services.AddScoped<CheckoutPricing>();
         services.AddScoped<CheckoutOrchestrator>();
         services.AddScoped<OrderCancellation>();
-        services.AddSingleton<PendingCancellationSettler>();
-        services.AddHostedService(sp => sp.GetRequiredService<PendingCancellationSettler>());
+        services.AddScoped<OrderCompletion>();
+        services.AddSingleton<PendingOrderSettler>();
+        services.AddHostedService(sp => sp.GetRequiredService<PendingOrderSettler>());
         services.AddScoped<IOrderingModule, OrderingModuleApi>();
         services.AddScoped<IIntegrationEventHandler<OrderPlaced>, OnOrderPlaced>();
         services.AddScoped<IIntegrationEventHandler<OrderShipped>, OnOrderShipped>();

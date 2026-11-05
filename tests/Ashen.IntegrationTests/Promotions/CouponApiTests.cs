@@ -154,6 +154,22 @@ public class CouponApiTests(CheckoutFactory factory) : IClassFixture<CheckoutFac
     }
 
     [Fact]
+    public async Task Cancelling_the_order_gives_the_coupon_use_back()
+    {
+        var code = await CreateCoupon(limit: 1, onePerCustomer: true);
+        var (client, _, addressId) = await ShopperWithCart(30m);
+        await Apply(client, code);
+        var orderId = (await (await client.Checkout(addressId, Shopper.GoodCard)).ReadAs<Shopper.Placed>()).OrderId;
+        Assert.Equal(1, (await CouponNamed(code)).RedemptionCount);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsync($"/api/me/orders/{orderId}/cancel", null, Ct)).StatusCode);
+
+        Assert.Equal(0, (await CouponNamed(code)).RedemptionCount);
+        await client.SetQuantity(await factory.CreateProduct("Rebuy Coupon Tee", 30m, stock: 5), 1);
+        Assert.Equal(HttpStatusCode.OK, (await Apply(client, code)).StatusCode); // the customer can use it again
+    }
+
+    [Fact]
     public async Task One_per_customer_coupon_cannot_be_used_twice()
     {
         var code = await CreateCoupon(onePerCustomer: true);

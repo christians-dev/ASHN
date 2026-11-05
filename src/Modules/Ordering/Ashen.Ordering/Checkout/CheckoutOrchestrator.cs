@@ -26,6 +26,7 @@ internal sealed partial class CheckoutOrchestrator(
     ICatalogModule catalog,
     IPaymentsModule payments,
     IPromotionsModule promotions,
+    OrderCompletion completion,
     ICurrentUser user,
     TimeProvider clock,
     ILogger<CheckoutOrchestrator> logger)
@@ -34,6 +35,56 @@ internal sealed partial class CheckoutOrchestrator(
     public async Task<Result<PlacedOrder>> Place(Guid checkoutId, Guid addressId, PaymentSource paymentSource, CancellationToken cancellationToken)
     {
         var customerId = user.UserId ?? throw new InvalidOperationException("Checkout needs a signed-in customer.");
+
+        // A double click sends two requests with one checkout id. Unguarded, both would pass the "already placed?"
+        // check and share one stock hold and one payment, and the loser's clean-up would void the winner's payment.
+        // So one request claims the id (a row, not a held lock or connection) and the other waits, then finds its order.
+        for (var waited = TimeSpan.Zero; ; waited += ClaimPoll)
+        {
+            if (await TryClaim(checkoutId, cancellationToken))
+            {
+                try
+                {
+                    return await PlaceClaimed(checkoutId, customerId, addressId, paymentSource, cancellationToken);
+                }
+                finally
+                {
+                    await db.Database.ExecuteSqlAsync(
+                        $"DELETE FROM ordering.checkout_attempts WHERE checkout_id = {checkoutId}", CancellationToken.None);
+                }
+            }
+
+            if (waited >= ClaimWait)
+            {
+                return Error.Conflict("checkout.in_progress", "This order is still being placed. Check your orders in a moment.");
+            }
+
+            await Task.Delay(ClaimPoll, clock, cancellationToken);
+        }
+    }
+
+    private static readonly TimeSpan ClaimPoll = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan ClaimWait = TimeSpan.FromSeconds(15);
+
+    /// <summary>A claim this old belongs to a request that crashed; checkouts take seconds.</summary>
+    private static readonly TimeSpan ClaimAbandoned = TimeSpan.FromMinutes(2);
+
+    /// <summary>Claims the checkout id unless a live request holds it. One statement, so two can't both win.</summary>
+    private async Task<bool> TryClaim(Guid checkoutId, CancellationToken cancellationToken)
+    {
+        var now = clock.GetUtcNow();
+        var abandoned = now - ClaimAbandoned;
+        return await db.Database.ExecuteSqlAsync(
+            $"""
+            INSERT INTO ordering.checkout_attempts (checkout_id, claimed_at) VALUES ({checkoutId}, {now})
+            ON CONFLICT (checkout_id) DO UPDATE SET claimed_at = excluded.claimed_at
+            WHERE checkout_attempts.claimed_at < {abandoned}
+            """, cancellationToken) == 1;
+    }
+
+    private async Task<Result<PlacedOrder>> PlaceClaimed(
+        Guid checkoutId, Guid customerId, Guid addressId, PaymentSource paymentSource, CancellationToken cancellationToken)
+    {
 
         if (await db.Orders.AsNoTracking().SingleOrDefaultAsync(o => o.CheckoutId == checkoutId, cancellationToken) is { } earlier)
         {
@@ -123,10 +174,16 @@ internal sealed partial class CheckoutOrchestrator(
             throw;
         }
 
-        // 5. The order exists: take the stock and the coupon use for good, and the money.
-        await catalog.ConfirmStock(checkoutId, CancellationToken.None);
-        await promotions.ConfirmCoupon(checkoutId, order.Id, CancellationToken.None);
-        await payments.Capture(payment.PaymentId.Value, order.Id, CancellationToken.None);
+        // 5. The order exists: take the stock and the coupon use for good, and the money. The order was saved as
+        // CompletionPending, so if this fails the background settler finishes it; the customer has their order.
+        try
+        {
+            await completion.Complete(order, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            LogCompletionFailed(ex, order.Id);
+        }
 
         LogPlaced(order.Id, order.OrderNumber);
         return new PlacedOrder(order.Id, order.OrderNumber);
@@ -142,6 +199,9 @@ internal sealed partial class CheckoutOrchestrator(
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Order {OrderId} placed as {OrderNumber}")]
     private partial void LogPlaced(Guid orderId, string orderNumber);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Order {OrderId} was placed but confirming stock, coupon or payment failed; it will be retried")]
+    private partial void LogCompletionFailed(Exception ex, Guid orderId);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Checkout {CheckoutId} payment declined: {Reason}")]
     private partial void LogDeclined(Guid checkoutId, string? reason);

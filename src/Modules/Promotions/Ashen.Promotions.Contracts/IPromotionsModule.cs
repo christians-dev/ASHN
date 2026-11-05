@@ -22,6 +22,9 @@ public interface IPromotionsModule
 
     /// <summary>Checkout failed: the held use is given back. Does nothing if there is no pending hold.</summary>
     Task ReleaseCoupon(Guid checkoutId, CancellationToken cancellationToken = default);
+
+    /// <summary>Gives back the coupon use of a cancelled order, so the customer and the usage limit get it back. Idempotent.</summary>
+    Task ReleaseForCancelledOrder(Guid orderId, CancellationToken cancellationToken = default);
 }
 
 /// <param name="Code">The code as stored (upper case).</param>

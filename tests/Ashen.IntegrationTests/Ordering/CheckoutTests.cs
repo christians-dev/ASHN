@@ -271,6 +271,24 @@ public class CheckoutTests(CheckoutFactory factory) : IClassFixture<CheckoutFact
     }
 
     [Fact]
+    public async Task Double_submitted_checkout_places_one_paid_order()
+    {
+        var variant = await factory.CreateProduct("Double Click Tee", 20m, stock: 5);
+        var (client, customerId, addressId) = await Shopper.New(factory);
+        await client.SetQuantity(variant, 2);
+        var key = Guid.NewGuid();
+
+        var responses = await Task.WhenAll(client.Checkout(addressId, Shopper.GoodCard, key), client.Checkout(addressId, Shopper.GoodCard, key));
+
+        Assert.All(responses, r => Assert.Equal(HttpStatusCode.Created, r.StatusCode));
+        var orderIds = await Task.WhenAll(responses.Select(r => r.ReadAs<Shopper.Placed>()));
+        Assert.Single(orderIds.Select(o => o.OrderId).Distinct());
+        Assert.Equal(PaymentStatus.Captured, Assert.Single(await PaymentsOf(customerId)).Status);
+        var stock = await factory.VariantOf(variant);
+        Assert.Equal((3, 0), (stock.StockOnHand, stock.StockReserved));
+    }
+
+    [Fact]
     public async Task Stale_authorization_without_an_order_is_voided()
     {
         var customerId = Guid.CreateVersion7();

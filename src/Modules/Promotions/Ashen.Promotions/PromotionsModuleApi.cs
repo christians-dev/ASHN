@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 using Ashen.BuildingBlocks;
 using Ashen.Promotions.Contracts;
 using Ashen.Promotions.Data;
@@ -82,12 +84,18 @@ internal sealed class PromotionsModuleApi(PromotionsDbContext db, TimeProvider c
         }
     }
 
-    public async Task ReleaseCoupon(Guid checkoutId, CancellationToken cancellationToken = default)
+    public Task ReleaseCoupon(Guid checkoutId, CancellationToken cancellationToken = default) =>
+        Release(r => r.CheckoutId == checkoutId && r.Status == RedemptionStatus.Pending, cancellationToken);
+
+    public Task ReleaseForCancelledOrder(Guid orderId, CancellationToken cancellationToken = default) =>
+        Release(r => r.OrderId == orderId && r.Status == RedemptionStatus.Confirmed, cancellationToken);
+
+    private async Task Release(Expression<Func<CouponRedemption, bool>> which, CancellationToken cancellationToken)
     {
         for (var attempt = 1; ; attempt++)
         {
             db.ChangeTracker.Clear();
-            var redemption = await db.Redemptions.SingleOrDefaultAsync(r => r.CheckoutId == checkoutId && r.Status == RedemptionStatus.Pending, cancellationToken);
+            var redemption = await db.Redemptions.SingleOrDefaultAsync(which, cancellationToken);
             if (redemption is null)
             {
                 return;

@@ -237,6 +237,7 @@ Deliberate shortcuts taken during implementation (Principle IV: the simpler opti
 | Short breached-password list | `Identity/Passwords/common-passwords.txt` | Blocks the most common passwords without a large file | Stronger policy needed: Have I Been Pwned range API |
 | My orders not paged | `Ordering/Features/MyOrders.cs` | A customer has few orders | Customers with many orders: page like the admin list |
 | Restock may repeat after a crash mid-settlement | `Ordering/Shared/OrderCancellation.cs` | Worst case is too much stock, never wrong money; refunds are idempotent | Stock accuracy matters: record restocks per order in Catalog |
+| Stock hold and authorisation still expire on their own | `Ordering/Shared/OrderCompletion.cs` | The order settler retries every minute, well inside their 15 minutes | Payments or Catalog can be down for longer: have those jobs ask Ordering whether an order exists first |
 | Gateway idempotency answers in memory | `Payments/Gateway/SimulatedPaymentGateway.cs` | Simulated gateway only | Replaced by a real provider, which keeps them |
 | Product reviews not paged | `Reviews/Features/Reviews.cs` | Products have few reviews | Products gather hundreds of reviews |
 | Product images on container disk | `Dockerfile` | One task; images are re-uploadable | More than one task in production: S3 behind `IFileStorage` |

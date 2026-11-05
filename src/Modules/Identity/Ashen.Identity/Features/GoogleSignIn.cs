@@ -110,6 +110,16 @@ internal static class GoogleSignIn
             {
                 return TypedResults.LocalRedirect("/sign-in?error=external");
             }
+            else if (!account.EmailConfirmed)
+            {
+                // Nobody proved they own this address before Google did, so whoever set the password may not (an
+                // attacker pre-registering someone's email). The address's owner takes the account over: drop the
+                // password and end every other session. A password reset gets one back.
+                await users.RemovePasswordAsync(account);
+                account.EmailConfirmed = true;
+                await users.UpdateAsync(account);
+                await users.UpdateSecurityStampAsync(account);
+            }
 
             if (!(await users.AddLoginAsync(account, info)).Succeeded)
             {

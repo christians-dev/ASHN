@@ -72,6 +72,12 @@ internal static class PasswordReset
             return result.ToValidationError().ToProblem();
         }
 
+        if (!account.EmailConfirmed)
+        {
+            account.EmailConfirmed = true; // using the emailed link proves they own the address
+            await users.UpdateAsync(account);
+        }
+
         await users.SetLockoutEndDateAsync(account, null);
         await users.ResetAccessFailedCountAsync(account);
         return TypedResults.NoContent();

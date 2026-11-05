@@ -1,4 +1,5 @@
 using Ashen.BuildingBlocks.Data;
+using Ashen.Ordering.Checkout;
 using Ashen.Ordering.Domain;
 
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,11 @@ internal sealed class OrderingDbContext(DbContextOptions<OrderingDbContext> opti
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasSequence<long>(OrderNumberSequence);
+        modelBuilder.Entity<CheckoutAttempt>(a =>
+        {
+            a.ToTable("checkout_attempts");
+            a.HasKey(x => x.CheckoutId);
+        });
     }
 
     /// <summary>"ASH-000123": human-friendly and never reused (a database sequence, not a count).</summary>

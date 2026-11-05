@@ -50,6 +50,7 @@ internal static class AccountEndpoints
             // Email doubles as the user name, so both change together.
             account.Email = email;
             account.UserName = email;
+            account.EmailConfirmed = false; // not proven until a reset link or Google confirms it
         }
 
         account.DisplayName = request.DisplayName.Trim();

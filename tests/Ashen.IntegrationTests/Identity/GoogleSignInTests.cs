@@ -87,6 +87,23 @@ public class GoogleSignInTests(GoogleFactory factory) : IClassFixture<GoogleFact
     }
 
     [Fact]
+    public async Task Google_takes_over_an_unproven_password_account_so_a_squatter_loses_access()
+    {
+        // An attacker registers someone else's address with a password before its owner ever signs in.
+        var attacker = factory.CreateApiClient();
+        await attacker.RefreshXsrfToken();
+        await attacker.PostAsJsonAsync("/api/auth/register", new { email = "squatted@gmail.test", password = "attacker password 1", displayName = "Squatter" }, Ct);
+
+        var (_, session) = await SignInWithGoogle("g-owner", "squatted@gmail.test", verified: true);
+
+        Assert.True(session.IsAuthenticated); // its other sessions end at the next security stamp check (1 minute)
+        var retry = factory.CreateApiClient();
+        await retry.RefreshXsrfToken();
+        var signIn = await retry.PostAsJsonAsync("/api/auth/login", new { email = "squatted@gmail.test", password = "attacker password 1" }, Ct);
+        Assert.False(signIn.IsSuccessStatusCode); // and the password no longer works
+    }
+
+    [Fact]
     public async Task Unverified_email_never_links_or_signs_in()
     {
         var client = factory.CreateApiClient();

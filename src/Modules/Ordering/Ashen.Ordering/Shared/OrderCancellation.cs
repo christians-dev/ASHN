@@ -5,6 +5,7 @@ using Ashen.Catalog.Contracts;
 using Ashen.Ordering.Data;
 using Ashen.Ordering.Domain;
 using Ashen.Payments.Contracts;
+using Ashen.Promotions.Contracts;
 
 using Microsoft.Extensions.Logging;
 
@@ -14,10 +15,10 @@ namespace Ashen.Ordering.Shared;
 /// Cancels a Paid order, for the customer (within the hour) or an admin (FR-035, FR-036). The status change is
 /// saved first under the order's concurrency token, so a cancel racing a ship has exactly one winner; only the
 /// winner refunds and restocks. That save also records both as pending, so if either fails now,
-/// <see cref="Background.PendingCancellationSettler"/> finishes them later (constitution VIII).
+/// <see cref="Background.PendingOrderSettler"/> finishes them later (constitution VIII).
 /// </summary>
 internal sealed partial class OrderCancellation(
-    OrderingDbContext db, ICatalogModule catalog, IPaymentsModule payments, IAuditLog audit, TimeProvider clock,
+    OrderingDbContext db, ICatalogModule catalog, IPaymentsModule payments, IPromotionsModule promotions, IAuditLog audit, TimeProvider clock,
     ILogger<OrderCancellation> logger)
 {
     public async Task<Result> Cancel(Order order, bool byAdmin, CancellationToken cancellationToken)
@@ -52,7 +53,7 @@ internal sealed partial class OrderCancellation(
         return Result.Success();
     }
 
-    /// <summary>Refunds (money first) and restocks whatever is still pending, saving after each step.</summary>
+    /// <summary>Refunds (money first), then gives back the stock and the coupon use, saving after each step.</summary>
     public async Task Settle(Order order, CancellationToken cancellationToken)
     {
         if (order.RefundPending)
@@ -64,6 +65,7 @@ internal sealed partial class OrderCancellation(
 
         if (order.RestockPending)
         {
+            await promotions.ReleaseForCancelledOrder(order.Id, cancellationToken); // idempotent
             // shortcut: a crash between the restock and this save restocks twice on retry (stock too high, never
             // money); record restocks per order in Catalog if that ever matters.
             await catalog.RestockForCancelledOrder([.. order.Lines.Select(l => new StockLine(l.VariantId, l.Quantity))], cancellationToken);

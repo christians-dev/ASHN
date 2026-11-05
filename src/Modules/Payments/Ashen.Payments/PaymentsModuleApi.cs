@@ -52,21 +52,13 @@ internal sealed partial class PaymentsModuleApi(
     }
 
     public Task Capture(Guid paymentId, Guid orderId, CancellationToken cancellationToken = default) =>
-        Change(paymentId, p => gateway.Capture(p.GatewayReference!), p => p.MarkCaptured(orderId, clock.GetUtcNow()), "captured", cancellationToken);
+        Change(paymentId, PaymentStatus.Captured, (p, key) => gateway.Capture(p.GatewayReference!, key), p => p.MarkCaptured(orderId, clock.GetUtcNow()), cancellationToken);
 
     public Task Void(Guid paymentId, CancellationToken cancellationToken = default) =>
-        Change(paymentId, p => gateway.Void(p.GatewayReference!), p => p.MarkVoided(clock.GetUtcNow()), "voided", cancellationToken);
+        Change(paymentId, PaymentStatus.Voided, (p, key) => gateway.Void(p.GatewayReference!, key), p => p.MarkVoided(clock.GetUtcNow()), cancellationToken);
 
-    public async Task Refund(Guid paymentId, CancellationToken cancellationToken = default)
-    {
-        // A cancellation retried after a crash may ask again; refund only once.
-        if (await db.Payments.AnyAsync(p => p.Id == paymentId && p.Status == PaymentStatus.Refunded, cancellationToken))
-        {
-            return;
-        }
-
-        await Change(paymentId, p => gateway.Refund(p.GatewayReference!, p.Amount), p => p.MarkRefunded(clock.GetUtcNow()), "refunded", cancellationToken);
-    }
+    public Task Refund(Guid paymentId, CancellationToken cancellationToken = default) =>
+        Change(paymentId, PaymentStatus.Refunded, (p, key) => gateway.Refund(p.GatewayReference!, p.Amount, key), p => p.MarkRefunded(clock.GetUtcNow()), cancellationToken);
 
     public async Task<CardSummary?> GetCard(Guid customerId, Guid savedCardId, CancellationToken cancellationToken = default) =>
         await db.SavedCards.AsNoTracking()
@@ -92,11 +84,22 @@ internal sealed partial class PaymentsModuleApi(
         }
     }
 
+    /// <summary>
+    /// Moves a payment to <paramref name="target"/> once. Callers retry after failures (checkout completion,
+    /// cancellation), so a payment already there is left alone, and the gateway gets a key that's the same on every
+    /// try: if it acted but our save failed, the retry gets its earlier answer instead of moving money twice.
+    /// </summary>
     private async Task Change(
-        Guid paymentId, Func<Payment, Task<GatewayResult>> callGateway, Action<Payment> record, string what, CancellationToken cancellationToken)
+        Guid paymentId, PaymentStatus target, Func<Payment, string, Task<GatewayResult>> callGateway, Action<Payment> record, CancellationToken cancellationToken)
     {
+        var what = target.ToString().ToLowerInvariant();
         var payment = await db.Payments.SingleAsync(p => p.Id == paymentId, cancellationToken);
-        var result = await callGateway(payment);
+        if (payment.Status == target)
+        {
+            return;
+        }
+
+        var result = await callGateway(payment, $"{paymentId:N}-{what}");
         if (!result.Succeeded)
         {
             throw new InvalidOperationException($"The payment gateway refused to mark payment {paymentId} {what}.");

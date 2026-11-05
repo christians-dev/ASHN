@@ -83,10 +83,10 @@ public class SimulatedPaymentGatewayTests
         var card = await _gateway.SaveCard(Card("4242424242424242"));
         var payment = await _gateway.Authorize(Amount, card.Token!, "k1");
 
-        Assert.True((await _gateway.Capture(payment.GatewayReference!)).Succeeded);
-        Assert.True((await _gateway.Refund(payment.GatewayReference!, Amount)).Succeeded);
-        Assert.True((await _gateway.Void(payment.GatewayReference!)).Succeeded);
-        Assert.False((await _gateway.Capture("not-ours")).Succeeded);
+        Assert.True((await _gateway.Capture(payment.GatewayReference!, "k-capture")).Succeeded);
+        Assert.True((await _gateway.Refund(payment.GatewayReference!, Amount, "k-refund")).Succeeded);
+        Assert.True((await _gateway.Void(payment.GatewayReference!, "k-void")).Succeeded);
+        Assert.False((await _gateway.Capture("not-ours", "k-other")).Succeeded);
     }
 
     [Fact]

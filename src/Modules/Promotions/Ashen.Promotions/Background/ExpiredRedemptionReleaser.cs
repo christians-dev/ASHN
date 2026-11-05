@@ -1,3 +1,4 @@
+using Ashen.BuildingBlocks.Background;
 using Ashen.Promotions.Contracts;
 using Ashen.Promotions.Data;
 using Ashen.Promotions.Domain;
@@ -16,21 +17,8 @@ namespace Ashen.Promotions.Background;
 internal sealed partial class ExpiredRedemptionReleaser(
     IServiceScopeFactory scopes, TimeProvider clock, ILogger<ExpiredRedemptionReleaser> logger) : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1), clock);
-        while (await timer.WaitForNextTickAsync(stoppingToken))
-        {
-            try
-            {
-                await ReleaseExpired(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                LogFailed(ex);
-            }
-        }
-    }
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
+        PeriodicJob.RunEveryMinute(clock, logger, ReleaseExpired, stoppingToken);
 
     /// <returns>How many held uses were released.</returns>
     public async Task<int> ReleaseExpired(CancellationToken cancellationToken)
@@ -56,7 +44,4 @@ internal sealed partial class ExpiredRedemptionReleaser(
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Released expired coupon hold for checkout {CheckoutId}")]
     private partial void LogReleased(Guid checkoutId);
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "Releasing expired coupon holds failed")]
-    private partial void LogFailed(Exception ex);
 }

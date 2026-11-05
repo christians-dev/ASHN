@@ -1,3 +1,4 @@
+using Ashen.BuildingBlocks.Background;
 using Ashen.Payments.Contracts;
 using Ashen.Payments.Data;
 using Ashen.Payments.Domain;
@@ -18,21 +19,8 @@ internal sealed partial class StaleAuthorizationVoider(
 {
     public static readonly TimeSpan MaxAge = TimeSpan.FromMinutes(15);
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1), clock);
-        while (await timer.WaitForNextTickAsync(stoppingToken))
-        {
-            try
-            {
-                await VoidStale(stoppingToken);
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                LogFailed(ex);
-            }
-        }
-    }
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
+        PeriodicJob.RunEveryMinute(clock, logger, VoidStale, stoppingToken);
 
     /// <returns>How many payments were voided.</returns>
     public async Task<int> VoidStale(CancellationToken cancellationToken)
@@ -58,7 +46,4 @@ internal sealed partial class StaleAuthorizationVoider(
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Voided stale payment authorization {PaymentId} with no order")]
     private partial void LogVoided(Guid paymentId);
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "Voiding stale payment authorizations failed")]
-    private partial void LogFailed(Exception ex);
 }

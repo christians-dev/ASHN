@@ -72,6 +72,23 @@ namespace Ashen.Ordering.Data.Migrations
                     b.ToTable("audit_entries", "ordering");
                 });
 
+            modelBuilder.Entity("Ashen.Ordering.Checkout.CheckoutAttempt", b =>
+                {
+                    b.Property<Guid>("CheckoutId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("checkout_id");
+
+                    b.Property<DateTimeOffset>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.HasKey("CheckoutId")
+                        .HasName("pk_checkout_attempts");
+
+                    b.ToTable("checkout_attempts", "ordering");
+                });
+
             modelBuilder.Entity("Ashen.Ordering.Domain.Cart", b =>
                 {
                     b.Property<Guid>("Id")
@@ -186,6 +203,10 @@ namespace Ashen.Ordering.Data.Migrations
                     b.Property<Guid>("CheckoutId")
                         .HasColumnType("uuid")
                         .HasColumnName("checkout_id");
+
+                    b.Property<bool>("CompletionPending")
+                        .HasColumnType("boolean")
+                        .HasColumnName("completion_pending");
 
                     b.Property<string>("ContactEmail")
                         .IsRequired()

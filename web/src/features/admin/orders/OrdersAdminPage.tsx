@@ -63,7 +63,7 @@ export function OrdersAdminPage() {
                   <td>{o.contactEmail || 'Deleted customer'}</td>
                   <td>{o.itemCount}</td>
                   <td>{format.money(o.total)}</td>
-                  <td>{o.status}</td>
+                  <td>{o.refundPending ? `${o.status} (refund pending)` : o.status}</td>
                 </tr>
               ))}
             </tbody>

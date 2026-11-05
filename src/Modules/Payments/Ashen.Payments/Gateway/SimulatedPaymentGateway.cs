@@ -24,9 +24,10 @@ internal interface IPaymentGateway
     bool IsSimulated { get; }
     Task<TokenizeResult> SaveCard(CardDetails card);
     Task<GatewayResult> Authorize(Money amount, string cardToken, string idempotencyKey);
-    Task<GatewayResult> Capture(string gatewayReference);
-    Task<GatewayResult> Void(string gatewayReference);
-    Task<GatewayResult> Refund(string gatewayReference, Money amount);
+    // A repeat with the same idempotency key must return the first answer without acting again.
+    Task<GatewayResult> Capture(string gatewayReference, string idempotencyKey);
+    Task<GatewayResult> Void(string gatewayReference, string idempotencyKey);
+    Task<GatewayResult> Refund(string gatewayReference, Money amount, string idempotencyKey);
 }
 
 /// <summary>
@@ -70,9 +71,9 @@ internal sealed class SimulatedPaymentGateway(TimeProvider clock, IConfiguration
         return _byIdempotencyKey.GetOrAdd(idempotencyKey, _ => Decide(cardToken));
     }
 
-    public Task<GatewayResult> Capture(string gatewayReference) => Acknowledge(gatewayReference);
-    public Task<GatewayResult> Void(string gatewayReference) => Acknowledge(gatewayReference);
-    public Task<GatewayResult> Refund(string gatewayReference, Money amount) => Acknowledge(gatewayReference);
+    public Task<GatewayResult> Capture(string gatewayReference, string idempotencyKey) => Acknowledge(gatewayReference, idempotencyKey);
+    public Task<GatewayResult> Void(string gatewayReference, string idempotencyKey) => Acknowledge(gatewayReference, idempotencyKey);
+    public Task<GatewayResult> Refund(string gatewayReference, Money amount, string idempotencyKey) => Acknowledge(gatewayReference, idempotencyKey);
 
     private GatewayResult Decide(string cardToken)
     {
@@ -96,10 +97,11 @@ internal sealed class SimulatedPaymentGateway(TimeProvider clock, IConfiguration
             : new GatewayResult(false, null, decline);
     }
 
-    private async Task<GatewayResult> Acknowledge(string gatewayReference)
+    private async Task<GatewayResult> Acknowledge(string gatewayReference, string idempotencyKey)
     {
         await Latency();
-        return new GatewayResult(gatewayReference.StartsWith(ReferencePrefix, StringComparison.Ordinal), gatewayReference, null);
+        return _byIdempotencyKey.GetOrAdd(idempotencyKey, _ =>
+            new GatewayResult(gatewayReference.StartsWith(ReferencePrefix, StringComparison.Ordinal), gatewayReference, null));
     }
 
     // Payments:SimulateLatencyMs makes loading states visible during local testing.

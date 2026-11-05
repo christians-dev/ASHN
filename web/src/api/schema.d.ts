@@ -2906,6 +2906,7 @@ export interface components {
             cardLast4: string;
             lines: components["schemas"]["OrderLineDto"][];
             canCancel: boolean;
+            refundPending: boolean;
         };
         OrderLineDto: {
             /** Format: uuid */
@@ -2933,6 +2934,7 @@ export interface components {
             /** Format: int32 */
             itemCount: number;
             contactEmail: string;
+            refundPending: boolean;
         };
         PagedResultOfAdminReviewDto: {
             items: components["schemas"]["AdminReviewDto"][];

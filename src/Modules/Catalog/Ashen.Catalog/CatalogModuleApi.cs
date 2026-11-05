@@ -121,8 +121,12 @@ internal sealed partial class CatalogModuleApi(
         await transaction.CommitAsync(cancellationToken);
     }
 
+    // FOR UPDATE: a confirm and a release of the same checkout (e.g. the expiry job) queue on these rows, and the
+    // second re-checks the status after the first commits, so only one of them changes the stock counters.
     private Task<List<StockReservation>> Pending(Guid checkoutId, CancellationToken cancellationToken) =>
-        db.Set<StockReservation>().Where(r => r.CheckoutId == checkoutId && r.Status == ReservationStatus.Pending).ToListAsync(cancellationToken);
+        db.Set<StockReservation>()
+            .FromSql($"SELECT * FROM catalog.stock_reservations WHERE checkout_id = {checkoutId} AND status = 'Pending' FOR UPDATE")
+            .ToListAsync(cancellationToken);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Released {Quantity} of variant {VariantId} held for checkout {CheckoutId}")]
     private partial void LogReleased(Guid checkoutId, Guid variantId, int quantity);

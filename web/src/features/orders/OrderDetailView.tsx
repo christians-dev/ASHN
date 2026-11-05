@@ -67,7 +67,8 @@ export function OrderDetailView({ order }: { order: OrderDetail }) {
           <h2>Payment</h2>
           <p>
             {order.cardBrand} ending {order.cardLast4}
-            {order.status === 'Cancelled' && ' · refunded in full'}
+            {order.status === 'Cancelled' &&
+              (order.refundPending ? ' · refund in progress' : ' · refunded in full')}
           </p>
         </section>
       </div>
